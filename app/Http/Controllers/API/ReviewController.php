@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ReviewResource;
 use App\Models\Review;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -16,9 +17,16 @@ class ReviewController extends Controller
 
     use ApiResponseTrait;
 
-    public function index()
+    public function index(Book $book)
     {
-        //
+        $reviews = $book->reviews()->paginate(2);
+
+        return response()->json([
+            "reviews" => ReviewResource::collection($reviews),
+            "current_page" => $reviews->currentPage(),
+            "last_page" => $reviews->lastPage(),
+            "per_page" => $reviews->perPage()
+        ]);
     }
 
     /**
@@ -77,11 +85,23 @@ class ReviewController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Review $review)
+    public function update(Book $book)
     {
         $user = \request()->user("sanctum");
 
-        if ($user->id !== $review->user_id) {
+        function getReview($user, $book) {
+            foreach ($book->reviews as $review) {
+                if ($review->user_id === $user->id) {
+                    return $review;
+                }
+            }
+
+            return null;
+        }
+
+        $review = getReview($user, $book);
+
+        if (!$review) {
             return $this->forbidden();
         }
 
@@ -103,18 +123,30 @@ class ReviewController extends Controller
 
         return response()->json([
             "code" => 200,
-            'message' => "Отзыв блять"
+            'message' => "Отзыв изменен"
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Review $review)
+    public function destroy(Book $book)
     {
         $user = \request()->user("sanctum");
 
-        if ($user->id !== $review->user_id) {
+        function getReview($user, $book) {
+            foreach ($book->reviews as $review) {
+                if ($review->user_id === $user->id) {
+                    return $review;
+                }
+            }
+
+            return null;
+        }
+
+        $review = getReview($user, $book);
+
+        if (!$review) {
             return $this->forbidden();
         }
 

@@ -10,6 +10,9 @@ use App\Http\Controllers\API\BookController;
 //    return $request->user();
 //})->middleware('auth:sanctum');
 
+Route::get("books", [BookController::class, "index"]);
+Route::get("books/{book}", [BookController::class, "show"]);
+
 
 Route::middleware(CheckIsUser::class)->group(function () {
 
@@ -17,7 +20,7 @@ Route::middleware(CheckIsUser::class)->group(function () {
         Route::get("{book}/reviews", [\App\Http\Controllers\API\ReviewController::class, "index"]);
         Route::post("{book}/reviews", [\App\Http\Controllers\API\ReviewController::class, "store"]);
         Route::patch("{book}/reviews", [\App\Http\Controllers\API\ReviewController::class, "update"]);
-        Route::delete("{review}/reviews", [\App\Http\Controllers\API\ReviewController::class, "destroy"]);
+        Route::delete("{book}/reviews", [\App\Http\Controllers\API\ReviewController::class, "destroy"]);
         Route::get("{book}/read", [\App\Http\Controllers\API\BookController::class, "read"]);
         Route::get("{book}/download", [\App\Http\Controllers\API\BookController::class, "download"]);
     });
@@ -25,6 +28,8 @@ Route::middleware(CheckIsUser::class)->group(function () {
     Route::get("cart", [\App\Http\Controllers\API\CartController::class, "index"]);
     Route::post("cart/{book}", [\App\Http\Controllers\API\CartController::class, "store"]);
     Route::delete("cart/{book}", [\App\Http\Controllers\API\CartController::class, "destroy"]);
+
+    Route::get("user/me", [UserController::class, "show"]);
 
     Route::middleware(CheckIsAdmin::class)->group(function () {
 
@@ -39,5 +44,4 @@ Route::prefix("auth")->group(function () {
     });
 });
 
-Route::get("books", [BookController::class, "index"]);
 

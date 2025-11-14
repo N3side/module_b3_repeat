@@ -28,6 +28,12 @@ class BookController extends Controller
         $books = Book::query()
             ->with("genres:id,genre")
             ->with("authors:id,author")
+            ->when($query, function ($q) use ($query) {
+                $q->where("title", "LIKE", "%{$query}%")
+                    ->orWhereHas("authors", function ($sub) use ($query) {
+                       $sub->where("author", "LIKE", "%{$query}}");
+                });
+            })
             ->when($min_price, function ($q) use ($min_price) {
                 $q->where("price", ">=", $min_price);
             })
@@ -40,7 +46,7 @@ class BookController extends Controller
                 });
             })
             ->orderBy("created_at", $sort)
-            ->paginate(12);
+            ->paginate(2);
 
         return response()->json([
             "data" => BookResource::collection(
@@ -68,7 +74,7 @@ class BookController extends Controller
 
         return response()->make($book->text, 200, [
             "Content-Type" => "text/plain",
-            "Content-Dispositions" => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition'   => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -80,9 +86,11 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Book $book)
     {
-        //
+        return response()->json([
+            "data" => BookResource::make($book)
+        ]);
     }
 
     /**

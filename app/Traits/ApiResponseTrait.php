@@ -13,7 +13,9 @@ trait ApiResponseTrait {
             $response["errors"] = $errors;
         }
 
-        return response()->json($errors, $code);
+        return response()->json([
+            "error" => $response
+        ]);
     }
 
     public function forbidden() {
